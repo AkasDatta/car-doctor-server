@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 // middleware
 app.use(cors());
@@ -31,8 +31,23 @@ async function run() {
     const serviceCollection = client.db('carDoctor').collection('services');
     const bookingCollection = client.db('carDoctor').collection('bookings');
 
+    // jwr
+    // app.post('/jwt', (req, res => {
+    //   const user = req.body;
+    //   console.log(user);
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
+    // }))
+    //services routes
     app.get('/services', async(req, res) => {
-      const cursor = serviceCollection.find();
+      const asc = req.params.sort;
+      // const query = {};
+      const query = { price : { $gt: 50, $lte: 150}}
+      const options = {
+        sort: {
+          "price": sort === 'asc' ? 1 : -1
+        }
+      };
+      const cursor = serviceCollection.find(query, options);
       const result = await cursor.toArray();
       res.send(result);
     })
@@ -49,7 +64,7 @@ async function run() {
       const result = await serviceCollection.findOne(query, options);
       res.send(result);
   })
-  // bookings
+  // bookings routes
     app.get('/bookings', async(req, res) =>{
       console.log(req.query.email);
       let query = {};
